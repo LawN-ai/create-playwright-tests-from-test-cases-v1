@@ -1,0 +1,13 @@
+{
+  "name": "playwright-tests-from-test-cases",
+  "version": "1.0.0",
+  "description": "Playwright test scripts generated from written test cases — one self-contained folder per target site under test-target/.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "auth": "node scripts/save-auth.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0"
+  }
+}

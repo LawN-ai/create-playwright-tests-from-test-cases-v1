@@ -1,0 +1,78 @@
+# config.yaml — the contract for the sauce-demo target.
+#
+# HOW TO USE (the .env.example pattern):
+#   1. This file is the example. It never holds a real target's values — every
+#      value below is fictional (example.com); replace all of them.
+#   2. Copy it to config.yaml in the target folder and fill every field, either
+#      by hand or from the skill's intake interview. That copy is the ACTUAL
+#      contract the agent reads at the start of every run.
+#   3. The copy is read-only during a run. The agent does not change scope on
+#      its own initiative: scope changes happen only when you say so, and get
+#      transcribed into the copy.
+#   4. Where you have no answer for a field, write "no constraint given".
+#
+# One folder per target site:
+#   <target-folder>/
+#   ├── config.yaml           <- this file, filled in
+#   ├── playwright.config.ts  <- generated; points testDir/results inside this folder
+#   ├── test-cases/           <- INPUT  (you write these; the skill never does)
+#   ├── test-scripts/         <- OUTPUT (generated .spec.ts + run guide)
+#   └── test-results/         <- OUTPUT (html-report/ + artifacts/)
+
+target_name: sauce-demo
+base_url: https://sauce-demo.myshopify.com/
+
+# The specific pages the test cases exercise. Exploration stays on these.
+target_urls: follow the URL in the test cases
+
+# All paths are relative to this file's folder.
+paths:
+  test_cases: ./test-cases        # INPUT  — read-only for the skill
+  test_scripts: ./test-scripts    # OUTPUT — generated Playwright specs + run guide
+  test_results: ./test-results    # OUTPUT — html-report/ and artifacts/
+
+# Optional. Defaults to <target_name>.spec.ts if omitted.
+spec_file: browse-to-checkout.spec.ts
+
+boundary:
+  # scope — how far the tests and exploration may roam:
+  #   page    = ONLY the target_urls above; navigating away is out of scope
+  #   section = the URLs above plus pages under those paths
+  #   domain  = anywhere on the site's own domain
+  scope: section
+  never_past:              # hard lines — never crossed, whatever the scope
+    - none follow the test cases
+  out_of_scope:            # things ruled out, with why
+    - none follow the test cases
+
+# The ONLY source of values the tests may type into forms. If a test case needs a
+# field these rules don't cover, the skill asks rather than inventing something.
+# (These cases type nothing — they stop at the checkout page.)
+test_data_rules: use made-up personal details, never real ones
+
+browser:
+  channel: chrome          # chrome (real Google Chrome) | chromium (bundled) | msedge
+  headed: true             # true = visible window; required for bot-protected sites
+  workers: 1               # 1 keeps runs gentle on the target site
+
+pacing:
+  # Browse like a person, not a script. Full page loads in quick succession are
+  # what trip bot detection and rate limiting, so runs space navigations out,
+  # prefer in-page interaction over reloading, and never retry a security wall.
+  # This governs BOTH the agent's own exploration and the generated suite
+  # (test-scripts/pacing.fixture.ts + slowMo; needs workers: 1 to hold across tests).
+  #
+  # Set min_seconds_between_navigations to 0 to disable pacing entirely.
+  min_seconds_between_navigations: 10
+  slow_mo_ms: 500          # pause before each browser action (click, type, select)
+  # Per-test timeout must leave room for the waiting above, or paced tests fail
+  # on the 30s default. Rule of thumb: 4 x min_seconds_between_navigations, min 60s.
+  test_timeout_seconds: 120
+
+# Every field in this file is one the skill actually reads and acts on. If you
+# add a field, add the workflow step that consumes it too — otherwise it's a
+# comment pretending to be configuration.
+#
+# This store's history with automated browsing, and the known failing test, are
+# recorded in test-scripts/browse-to-checkout.md — prose that gets read, rather
+# than config fields that don't.
